@@ -379,6 +379,221 @@ public:
     }
 };
 
+// ------------------------- register classes -------------------------
+
+/**
+ * @class Register
+ * @brief Abstract base class for all registers
+ */
+class Register {
+protected:
+	signed char value;
+
+public:
+	/**
+	 * @brief Constructor for Register
+	 * @param val The initial value of the register
+	 */
+	Register(signed char val = 0) : value(val) {}
+
+    /**
+	 * @brief Destructor
+	 */
+	virtual ~Register() {}
+
+    /**
+	 * @brief Gets the value of the register
+	 * @return The value of the register
+	 */
+	signed char getValue() const { return value; }
+
+    /**
+	 * @brief Sets the value of the register
+	 * @param val The value to set
+	 */
+    void setValue(signed char val) { value = val; }
+
+    /**
+	 * @brief Resets the register to zero
+	 */
+    virtual void reset() { value = 0; }
+};
+
+/**
+ * @class FlagRegister
+ * @brief Implements the flag register of the assembler
+ */
+class FlagRegister : public Register {
+private:
+	bool Overflow;
+	bool Underflow;
+	bool Zero;
+	bool Carry;
+
+public:
+	/**
+	 * @brief Constructor for FlagRegister
+	 */
+	FlagRegister() : Register() {
+		Overflow = false;
+		Underflow = false;
+		Zero = false;
+		Carry = false;
+	}
+
+    /**
+	 * @brief Destructor
+	 */
+	virtual ~FlagRegister() {}
+
+	/**
+	 * @brief Sets the overflow flag
+	 * @param val The value to set
+	 */
+    void setOverflow(bool val) { Overflow = val; }
+
+	/**
+	 * @brief Sets the underflow flag
+	 * @param val The value to set
+	 */
+    void setUnderflow(bool val) { Underflow = val; }
+
+	/**
+	 * @brief Sets the zero flag
+	 * @param val The value to set
+	 */
+    void setZero(bool val) { Zero = val; }
+
+	/**
+	 * @brief Sets the carry flag
+	 * @param val The value to set
+	 */
+    void setCarry(bool val) { Carry = val; }
+
+	/**
+	 * @brief Gets the overflow flag
+	 * @return The overflow flag
+	 */
+    bool getOverflow() const { return Overflow; }
+
+	/**
+	 * @brief Gets the underflow flag
+	 * @return The underflow flag
+	 */
+    bool getUnderflow() const { return Underflow; }
+
+	/**
+	 * @brief Gets the zero flag
+	 * @return The zero flag
+	 */
+    bool getZero() const { return Zero; }
+
+	/**
+	 * @brief Gets the carry flag
+	 * @return The carry flag
+	 */
+    bool getCarry() const { return Carry; }
+
+	/**
+	 * @brief Resets the flags to false
+	 */
+    void reset() {
+        Overflow = false;
+        Underflow = false;
+        Zero = false;
+        Carry = false;
+    }
+
+	/**
+	 * @brief Resets a specific flag only
+	 * @param flagName The name of the flag to reset
+	 */
+	bool reset(string flagName) {
+		if(flagName == "OVERFLOW" || flagName == "overflow") {
+			Overflow = false;
+		} else if(flagName == "UNDERFLOW" || flagName == "underflow") {
+			Underflow = false;
+		} else if(flagName == "ZERO" || flagName == "zero") {
+			Zero = false;
+		} else if(flagName == "CARRY" || flagName == "carry") {
+			Carry = false;
+		} else {
+			return false;
+		}
+
+		return true;
+	}
+
+	/**
+	 * @brief Updates the flags based on the result of an operation
+	 * @param result The result of the operation
+	 */
+	void updateFlag(int result) {
+		Overflow = (result > 127);
+		Underflow = (result < -128);
+		Zero = (result == 0);
+	}
+
+	/**
+	 * @brief Updates the flags based on the result of an operation
+	 * @param op The operator of the operation +, -, *, /
+	 * @param a The first operand
+	 * @param b The second operand, use 1 for INC or DEC
+	 * @param result The result of the operation
+	 */
+	void updateFlag(char op, int a, int b, int result) {
+		updateFlag(result);
+		if (op == '+' || op == '-' || op == '*' || op == '/') {
+			Carry = (result > 255 || result < 0);
+		}
+	}
+};
+
+/**
+ * @class ProgramCounter
+ * @brief Implements the program counter of the assembler
+ */
+class ProgramCounter : public Register {
+public:
+	/**
+	 * @brief Constructor for ProgramCounter
+	 */
+	ProgramCounter() : Register() {}
+
+	/**
+	 * @brief Increments the program counter
+	 */
+	void increment() { value++; }
+
+	/**
+	 * @brief Jumps to a specific address
+	 * @param addr The address to jump to
+	 */
+    void jump(signed char addr) { value = addr; }
+};
+
+/**
+ * @class StackPointer
+ * @brief Implements the stack pointer of the assembler
+ */
+class StackPointer : public Register {
+public:
+	/**
+	 * @brief Constructor for StackPointer
+	 */
+	StackPointer() : Register() {}
+
+	/**
+	 * @brief Increments the stack pointer
+	 */
+	void increment() { value++; }
+
+	/**
+	 * @brief Decrements the stack pointer
+	 */
+    void decrement() { value--; }
+};
+
 /**
  * @brief Abstract Base Class for all instructions
  */
