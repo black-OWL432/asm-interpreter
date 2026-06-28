@@ -15,7 +15,7 @@ MOHAMMED A. T. SHAKSHAK
 
 using namespace std;
 
-// self implemented STL container
+// ------------------------- self implemented STL container -------------------------
 
 template <typename T> class sVector;
 template <typename T> class sStack;
@@ -327,6 +327,8 @@ public:
 	}
 };
 
+// ------------------------- assembler data structures -------------------------
+
 /**
  * @class Memory
  * @brief Implements the memory of the assembler
@@ -594,7 +596,10 @@ public:
     void decrement() { value--; }
 };
 
+// ------------------------- instruction classes -------------------------
+
 /**
+ * @class Instruction
  * @brief Abstract Base Class for all instructions
  */
 class Instruction {
@@ -602,12 +607,12 @@ public:
 	/**
 	 * @brief Virtual function to be overridden by derived classes
 	 */
-	virtual void execute() = 0; 
-	
+	virtual void execute() = 0;
+
 	/**
 	 * @brief Virtual destructor
 	 */
-	virtual ~Instruction() {} 
+	virtual ~Instruction() {}
 };
 
 /**
@@ -638,9 +643,9 @@ public:
 	 */
 	void execute() override {
 		// // TODO: Person 2 - Replace these mock values with actual Register objects
-		signed char destValue = 100;  
-		signed char sourceValue = 100; 
-		
+		signed char destValue = 100;
+		signed char sourceValue = 100;
+
 		// Temporary mock flags
 		bool flag_OF = false;		// overflow
 		bool flag_UF = false;		// underflow
@@ -652,33 +657,27 @@ public:
 		// --- Math Logic ---
 		if (opcode == "ADD") {
 			result = (int)destValue + (int)sourceValue;
-		} 
-		else if (opcode == "SUB") {
+		} else if (opcode == "SUB") {
 			result = (int)destValue - (int)sourceValue;
-		} 
-		else if (opcode == "MUL") {
+		} else if (opcode == "MUL") {
 			result = (int)destValue * (int)sourceValue;
-		} 
-		else if (opcode == "DIV") {
+		} else if (opcode == "DIV") {
 			if (sourceValue == 0) {
 				cout << "Error: Division by zero!" << endl;
 				return; // Stop execution to prevent crash
 			}
 			result = (int)destValue / (int)sourceValue;
-		} 
-		else if (opcode == "INC") {
+		} else if (opcode == "INC") {
 			result = (int)destValue + 1; 	// INC only uses destination
-		} 
-		else if (opcode == "DEC") {
+		} else if (opcode == "DEC") {
 			result = (int)destValue - 1;	// DEC only uses destination
 		}
 
-		// --- Flags Update ---
+		// Flags Update
 		if (result > 127) {
 			flag_OF = true;
 			flag_CF = true;		// Exceeds 8-bit capacity
-		} 
-		else if (result < -128) {
+		} else if (result < -128) {
 			flag_UF = true;
 			flag_CF = true;		// Exceeds 8-bit capacity
 		}
@@ -690,11 +689,10 @@ public:
 			flag_ZF = true;
 		}
 
-		// --- Print Output ---
+		// Print Output
 		cout << "Executing: " << opcode << " " << destRegister;
 		if (sourceRegister != "") cout << ", " << sourceRegister;
 		cout << endl;
-		
 		cout << "--- Math Result ---" << endl;
 		cout << "Result Value: " << (int)destValue << endl;
 		cout << "Flags -> OF: " << flag_OF << " | UF: " << flag_UF << " | ZF: " << flag_ZF << " | CF: " << flag_CF << endl;
@@ -740,8 +738,7 @@ public:
 			// Check the LEDs based on the input
 			if (userInput > 127) {
 				flag_OF = true;
-			} 
-			else if (userInput < -128) {
+			} else if (userInput < -128) {
 				flag_UF = true;
 			}
 
@@ -755,15 +752,17 @@ public:
 			// Dummy print to verify that the flags are working
 			cout << "[System] INPUT stored in " << targetRegister << " -> " << (int)destValue << endl;
 			cout << "Flags -> OF: " << flag_OF << " | UF: " << flag_UF << " | ZF: " << flag_ZF << endl;
-		} 
-		else if (opcode == "DISPLAY") {
+		} else if (opcode == "DISPLAY") {
 			// Print the sStack value directly to the screen
 			cout << (int)destValue << endl;
 		}
 	}
 };
 
-// Operation class
+/**
+ * @class Operation
+ * @brief Abstract base class for all operations
+ */
 class Operation {
 protected:
 	string opcode;
@@ -782,6 +781,11 @@ public:
 	virtual ~Operation() {}
 };
 
+/**
+ * @brief Trims whitespace from a string
+ * @param str The string to trim
+ * @return The trimmed string
+ */
 std::string trim(const std::string& str) {
 	//           MOV
 	// ^0........^first
@@ -813,7 +817,7 @@ int main(int argc, char* argv[]) {
 	if (!fd.is_open()) {
 		cout << "Error: Could not open file " << fileName << endl;
 		return 1;
-	} 
+	}
 
 	string line;
 	while (getline(fd, line)) {
