@@ -910,8 +910,9 @@ class Instruction {
 public:
 	/**
 	 * @brief Virtual function to be overridden by derived classes
+	 * @param cpu Reference to the CPU to execute the instruction on
 	 */
-	virtual void execute() = 0;
+	virtual void execute(CPU& cpu) = 0;
 
 	/**
 	 * @brief Virtual destructor
@@ -930,77 +931,46 @@ private:
 	string sourceRegister;
 
 public:
-	/**
-	 * @brief Constructor for ArithmeticInstruction
-	 * @param op The opcode of the instruction
-	 * @param dest The destination register
-	 * @param source The source register
-	 */
 	ArithmeticInstruction(string op, string dest, string source = "") {
 		opcode = op;
 		destRegister = dest;
 		sourceRegister = source;
 	}
 
-	/**
-	 * @brief Executes the arithmetic instruction
-	 */
-	void execute() override {
-		// // TODO: Person 2 - Replace these mock values with actual Register objects
-		signed char destValue = 100;
-		signed char sourceValue = 100;
+	void execute(CPU& cpu) override {
+		// 1. Retrieve the actual value from the target stack via the CPU
+		int destValue = (int)cpu.getRegisterValue(destRegister);
+		int sourceValue = 0;
 
-		// Temporary mock flags
-		bool flag_OF = false;		// overflow
-		bool flag_UF = false;		// underflow
-		bool flag_ZF = false;		// zero
-		bool flag_CF = false;		// carry
+		// 2. Retrieve the value from the source (the Kong function handles both numbers and stacks automatically)
+		if (sourceRegister != "") {
+			sourceValue = cpu.getOperandValue(sourceRegister);
+		}
 
 		int result = 0;
 
-		// --- Math Logic ---
+		// 3. Perform the arithmetic operations
 		if (opcode == "ADD") {
-			result = (int)destValue + (int)sourceValue;
+			result = destValue + sourceValue;
 		} else if (opcode == "SUB") {
-			result = (int)destValue - (int)sourceValue;
+			result = destValue - sourceValue;
 		} else if (opcode == "MUL") {
-			result = (int)destValue * (int)sourceValue;
+			result = destValue * sourceValue;
 		} else if (opcode == "DIV") {
 			if (sourceValue == 0) {
 				cout << "Error: Division by zero!" << endl;
-				return; // Stop execution to prevent crash
+				exit(1); 
 			}
-			result = (int)destValue / (int)sourceValue;
+			result = destValue / sourceValue;
 		} else if (opcode == "INC") {
-			result = (int)destValue + 1; 	// INC only uses destination
+			result = destValue + 1;
 		} else if (opcode == "DEC") {
-			result = (int)destValue - 1;	// DEC only uses destination
+			result = destValue - 1;
 		}
 
-		// Flags Update
-		if (result > 127) {
-			flag_OF = true;
-			flag_CF = true;		// Exceeds 8-bit capacity
-		} else if (result < -128) {
-			flag_UF = true;
-			flag_CF = true;		// Exceeds 8-bit capacity
-		}
-
-		// Truncate to 8-bit
-		destValue = (signed char)result;
-
-		if (destValue == 0) {
-			flag_ZF = true;
-		}
-
-		// Print Output
-		cout << "Executing: " << opcode << " " << destRegister;
-		if (sourceRegister != "") cout << ", " << sourceRegister;
-		cout << endl;
-		cout << "--- Math Result ---" << endl;
-		cout << "Result Value: " << (int)destValue << endl;
-		cout << "Flags -> OF: " << flag_OF << " | UF: " << flag_UF << " | ZF: " << flag_ZF << " | CF: " << flag_CF << endl;
-		cout << "-------------------\n" << endl;
+		// 4. Send the final result to the CPU
+		// The CPU will automatically update the LEDs (OF, UF, ZF, CF) and push the value
+		cpu.setRegisterValue(destRegister, result);
 	}
 };
 
@@ -1014,51 +984,25 @@ private:
 	string targetRegister;
 
 public:
-	/**
-	 * @brief Constructor for IOInstruction
-	 * @param op The opcode of the instruction
-	 * @param target The target register
-	 */
 	IOInstruction(string op, string target) {
 		opcode = op;
 		targetRegister = target;
 	}
 
-	/**
-	 * @brief Executes the I/O instruction
-	 */
-	void execute() override {
-		// // TODO: Person 2 - Replace these mock values with actual Register objects
-		signed char destValue = 42; // Dummy value for testing the DISPLAY instruction
-		bool flag_OF = false;
-		bool flag_UF = false;
-		bool flag_ZF = false;
-
+	void execute(CPU& cpu) override {
 		if (opcode == "INPUT") {
 			cout << "?";
 			int userInput;
-			cin >> userInput; // Wait for user input
+			cin >> userInput;
+			
+			// Send the user input to the CPU to store it and update the flags
 
-			// Check the LEDs based on the input
-			if (userInput > 127) {
-				flag_OF = true;
-			} else if (userInput < -128) {
-				flag_UF = true;
-			}
-
-			// Push the value and save it on the sStack
-			destValue = (signed char)userInput;
-
-			if (destValue == 0) {
-				flag_ZF = true;
-			}
-
-			// Dummy print to verify that the flags are working
-			cout << "[System] INPUT stored in " << targetRegister << " -> " << (int)destValue << endl;
-			cout << "Flags -> OF: " << flag_OF << " | UF: " << flag_UF << " | ZF: " << flag_ZF << endl;
-		} else if (opcode == "DISPLAY") {
-			// Print the sStack value directly to the screen
-			cout << (int)destValue << endl;
+			cpu.setRegisterValue(targetRegister, userInput);
+		} 
+		else if (opcode == "DISPLAY") {
+			// Retrieve the actual value from the CPU and display it
+			int value = (int)cpu.getRegisterValue(targetRegister);
+			cout << value << endl;
 		}
 	}
 };
@@ -1106,6 +1050,8 @@ std::string trim(const std::string& str) {
 }
 
 // Entry point
+
+
 int main(int argc, char* argv[]) {
 	string fileName;
 	sVector<Operation> program;
