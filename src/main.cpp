@@ -422,6 +422,41 @@ public:
 };
 
 /**
+ * @class GeneralRegister
+ * @brief Represents one of the 8 VM data registers R0-R7.
+ * @author KONG WAI XIN
+ */
+class GeneralRegister : public Register {
+private:
+	string name;
+
+public:
+	/**
+	 * @brief Constructor for GeneralRegister
+	 * @param regName The register name, such as R0, R1, R2
+	 */
+	GeneralRegister(string regName = "") : Register(0) {
+		name = regName;
+	}
+
+	/**
+	 * @brief Gets the register name
+	 * @return The name of the register
+	 */
+	string getName() const {
+		return name;
+	}
+
+	/**
+	 * @brief Sets the register name
+	 * @param regName The new register name
+	 */
+	void setName(string regName) {
+		name = regName;
+	}
+};
+
+/**
  * @class FlagRegister
  * @brief Implements the flag register of the assembler
  */
