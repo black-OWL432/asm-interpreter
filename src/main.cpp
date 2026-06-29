@@ -4,7 +4,7 @@ Virtual Machine and Assembly Language Interpreter
 
 T11L Assignment Group I
 LEE CHONG CHUN				252UC254YW		LEE.CHONG.CHUN1@student.mmu.edu.my
-KONG WAI XIN				
+KONG WAI XIN				242UC244LP		KONG.WAI.XIN@student.mmu.edu.my
 MAKHLOUF MAYAS				252UC251RE		MAKHLOUF.MAYAS@student.mmu.edu.my
 MOHAMMED A. T. SHAKSHAK		
 */
@@ -336,49 +336,49 @@ public:
 class Memory {
 private:
 	static const int MEMORY_SIZE = 64;
-    signed char cells[MEMORY_SIZE];
+	signed char cells[MEMORY_SIZE];
 
 public:
-    /**
+	/**
 	 * @brief Constructor for Memory
 	 */
-    Memory() {
-        for (int i = 0; i < MEMORY_SIZE; i++) {
-            cells[i] = 0;
-        }
-    }
+	Memory() {
+		for (int i = 0; i < MEMORY_SIZE; i++) {
+			cells[i] = 0;
+		}
+	}
 
-    /**
+	/**
 	 * @brief Writes a value to the specified address in memory
 	 * @param address The address to write to
 	 * @param val The value to write
 	 */
-    void write(int address, signed char val) {
-        if (address >= 0 && address < MEMORY_SIZE) {
-            cells[address] = val;
-        }
-    }
+	void write(int address, signed char val) {
+		if (address >= 0 && address < MEMORY_SIZE) {
+			cells[address] = val;
+		}
+	}
 
-    /**
+	/**
 	 * @brief Reads a value from the specified address in memory
 	 * @param address The address to read from
 	 * @return The value at the specified address
 	 */
-    signed char read(int address) const {
-        if (address >= 0 && address < MEMORY_SIZE) {
-            return cells[address];
-        }
-        return 0;
-    }
+	signed char read(int address) const {
+		if (address >= 0 && address < MEMORY_SIZE) {
+			return cells[address];
+		}
+		return 0;
+	}
 
-    /**
+	/**
 	 * @brief Resets the memory to all zeros
 	 */
-    void reset() {
-        for (int i = 0; i < MEMORY_SIZE; i++) {
-            cells[i] = 0;
-        }
-    }
+	void reset() {
+		for (int i = 0; i < MEMORY_SIZE; i++) {
+			cells[i] = 0;
+		}
+	}
 };
 
 // ------------------------- register classes -------------------------
@@ -398,27 +398,27 @@ public:
 	 */
 	Register(signed char val = 0) : value(val) {}
 
-    /**
+	/**
 	 * @brief Destructor
 	 */
 	virtual ~Register() {}
 
-    /**
+	/**
 	 * @brief Gets the value of the register
 	 * @return The value of the register
 	 */
 	signed char getValue() const { return value; }
 
-    /**
+	/**
 	 * @brief Sets the value of the register
 	 * @param val The value to set
 	 */
-    void setValue(signed char val) { value = val; }
+	void setValue(signed char val) { value = val; }
 
-    /**
+	/**
 	 * @brief Resets the register to zero
 	 */
-    virtual void reset() { value = 0; }
+	virtual void reset() { value = 0; }
 };
 
 /**
@@ -443,7 +443,7 @@ public:
 		Carry = false;
 	}
 
-    /**
+	/**
 	 * @brief Destructor
 	 */
 	virtual ~FlagRegister() {}
@@ -452,72 +452,72 @@ public:
 	 * @brief Sets the overflow flag
 	 * @param val The value to set
 	 */
-    void setOverflow(bool val) { Overflow = val; }
+	void setOverflow(bool val) { Overflow = val; }
 
 	/**
 	 * @brief Sets the underflow flag
 	 * @param val The value to set
 	 */
-    void setUnderflow(bool val) { Underflow = val; }
+	void setUnderflow(bool val) { Underflow = val; }
 
 	/**
 	 * @brief Sets the zero flag
 	 * @param val The value to set
 	 */
-    void setZero(bool val) { Zero = val; }
+	void setZero(bool val) { Zero = val; }
 
 	/**
 	 * @brief Sets the carry flag
 	 * @param val The value to set
 	 */
-    void setCarry(bool val) { Carry = val; }
+	void setCarry(bool val) { Carry = val; }
 
 	/**
 	 * @brief Gets the overflow flag
 	 * @return The overflow flag
 	 */
-    bool getOverflow() const { return Overflow; }
+	bool getOverflow() const { return Overflow; }
 
 	/**
 	 * @brief Gets the underflow flag
 	 * @return The underflow flag
 	 */
-    bool getUnderflow() const { return Underflow; }
+	bool getUnderflow() const { return Underflow; }
 
 	/**
 	 * @brief Gets the zero flag
 	 * @return The zero flag
 	 */
-    bool getZero() const { return Zero; }
+	bool getZero() const { return Zero; }
 
 	/**
 	 * @brief Gets the carry flag
 	 * @return The carry flag
 	 */
-    bool getCarry() const { return Carry; }
+	bool getCarry() const { return Carry; }
 
 	/**
 	 * @brief Resets the flags to false
 	 */
-    void reset() {
-        Overflow = false;
-        Underflow = false;
-        Zero = false;
-        Carry = false;
-    }
+	void reset() {
+		Overflow = false;
+		Underflow = false;
+		Zero = false;
+		Carry = false;
+	}
 
 	/**
 	 * @brief Resets a specific flag only
 	 * @param flagName The name of the flag to reset
 	 */
 	bool reset(string flagName) {
-		if(flagName == "OVERFLOW" || flagName == "overflow") {
+		if (flagName == "OVERFLOW" || flagName == "OF") {
 			Overflow = false;
-		} else if(flagName == "UNDERFLOW" || flagName == "underflow") {
+		} else if (flagName == "UNDERFLOW" || flagName == "UF") {
 			Underflow = false;
-		} else if(flagName == "ZERO" || flagName == "zero") {
+		} else if (flagName == "ZERO" || flagName == "ZF") {
 			Zero = false;
-		} else if(flagName == "CARRY" || flagName == "carry") {
+		} else if (flagName == "CARRY" || flagName == "CF") {
 			Carry = false;
 		} else {
 			return false;
@@ -571,7 +571,7 @@ public:
 	 * @brief Jumps to a specific address
 	 * @param addr The address to jump to
 	 */
-    void jump(signed char addr) { value = addr; }
+	void jump(signed char addr) { value = addr; }
 };
 
 /**
@@ -593,7 +593,7 @@ public:
 	/**
 	 * @brief Decrements the stack pointer
 	 */
-    void decrement() { value--; }
+	void decrement() { value--; }
 };
 
 // ------------------------- instruction classes -------------------------
