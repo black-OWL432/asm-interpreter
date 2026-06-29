@@ -596,6 +596,258 @@ public:
 	void decrement() { value--; }
 };
 
+/**
+ * @class CPU
+ * @brief Owns the VM registers, flags, memory, PC, SI, and system stack
+ * @author KONG WAI XIN
+ */
+class CPU {
+private:
+	GeneralRegister registers[8];
+	FlagRegister flags;
+	Memory memory;
+	ProgramCounter pc;
+	StackPointer si;
+	sStack<signed char> systemStack;
+
+	/**
+	 * @brief Converts a decimal string to an integer
+	 */
+	int stringToInt(string text) const {
+		int sign = 1;
+		int index = 0;
+		int number = 0;
+		if (!text.empty() && text[0] == '-') {
+			sign = -1;
+			index = 1;
+		}
+		for (int i = index; i < (int)text.length(); i++) {
+			number = number * 10 + (text[i] - '0');
+		}
+		return number * sign;
+	}
+
+	/**
+	 * @brief Checks whether a string contains a valid integer
+	 */
+	bool isNumber(string text) const {
+		if (text.empty()) return false;
+		int start = 0;
+		if (text[0] == '-') start = 1;
+		if (start == (int)text.length()) return false;
+		for (int i = start; i < (int)text.length(); i++) {
+			if (text[i] < '0' || text[i] > '9') return false;
+		}
+		return true;
+	}
+
+	/**
+	 * @brief Removes surrounding square brackets
+	 */
+	string removeBrackets(string text) const {
+		if (text.length() >= 2 && text[0] == '['
+			&& text[text.length() - 1] == ']') {
+			return text.substr(1, text.length() - 2);
+		}
+		return text;
+	}
+
+	/**
+	 * @brief Formats a value as four characters for the VM dump
+	 */
+	string format4(int value) const {
+		bool negative = value < 0;
+		if (negative) value = -value;
+		string digits = "";
+		if (value == 0) digits = "0";
+		while (value > 0) {
+			digits = (char)('0' + value % 10) + digits;
+			value /= 10;
+		}
+		while ((int)digits.length() < 4) digits = "0" + digits;
+		if (negative) digits = "-" + digits.substr(1);
+		return digits;
+	}
+
+public:
+	/**
+	 * @brief Constructs and initializes the VM hardware
+	 */
+	CPU() : systemStack(8) {
+		string names[8] = {"R0", "R1", "R2", "R3",
+			"R4", "R5", "R6", "R7"};
+		for (int i = 0; i < 8; i++) registers[i].setName(names[i]);
+		reset();
+	}
+
+	/**
+	 * @brief Resets all VM hardware
+	 */
+	void reset() {
+		for (int i = 0; i < 8; i++) registers[i].reset();
+		flags.reset();
+		memory.reset();
+		pc.reset();
+		si.reset();
+		systemStack.clear();
+	}
+
+	/**
+	 * @brief Checks whether a token names R0 through R7
+	 */
+	bool isRegisterName(string name) const {
+		return name.length() == 2 && name[0] == 'R'
+			&& name[1] >= '0' && name[1] <= '7';
+	}
+
+	/**
+	 * @brief Gets the array index for a register name
+	 */
+	int getRegisterIndex(string name) const {
+		if (!isRegisterName(name)) return -1;
+		return name[1] - '0';
+	}
+
+	/**
+	 * @brief Gets a data register value
+	 */
+	signed char getRegisterValue(string name) const {
+		int index = getRegisterIndex(name);
+		if (index == -1) {
+			cout << "Error: invalid register " << name << endl;
+			exit(1);
+		}
+		return registers[index].getValue();
+	}
+
+	/**
+	 * @brief Sets a data register and updates flags
+	 */
+	void setRegisterValue(string name, int value) {
+		int index = getRegisterIndex(name);
+		if (index == -1) {
+			cout << "Error: invalid register " << name << endl;
+			exit(1);
+		}
+		flags.updateFlag(value);
+		flags.setCarry(value > 127 || value < -128);
+		registers[index].setValue((signed char)value);
+	}
+
+	/**
+	 * @brief Resolves direct or register-indirect memory addressing
+	 */
+	int getAddress(string token) const {
+		string clean = removeBrackets(token);
+		int address = 0;
+		if (isRegisterName(clean)) {
+			address = (int)getRegisterValue(clean);
+		} else if (isNumber(clean)) {
+			address = stringToInt(clean);
+		} else {
+			cout << "Error: invalid address " << token << endl;
+			exit(1);
+		}
+		if (address < 0 || address >= memory.getSize()) {
+			cout << "Error: memory address out of range" << endl;
+			exit(1);
+		}
+		return address;
+	}
+
+	/**
+	 * @brief Resolves a register, immediate value, or memory operand
+	 */
+	int getOperandValue(string token) const {
+		if (isRegisterName(token)) return (int)getRegisterValue(token);
+		if (token.length() >= 2 && token[0] == '[') {
+			return (int)memory.read(getAddress(token));
+		}
+		if (isNumber(token)) return stringToInt(token);
+		cout << "Error: invalid operand " << token << endl;
+		exit(1);
+	}
+
+	/**
+	 * @brief Writes a value to VM memory
+	 */
+	void writeMemory(int address, int value) {
+		if (!memory.write(address, (signed char)value)) {
+			cout << "Error: memory address out of range" << endl;
+			exit(1);
+		}
+	}
+
+	/**
+	 * @brief Reads a value from VM memory
+	 */
+	signed char readMemory(int address) const {
+		return memory.read(address);
+	}
+
+	/**
+	 * @brief Increments the program counter
+	 */
+	void incrementPC() {
+		pc.increment();
+	}
+
+	/**
+	 * @brief Resets one named flag
+	 */
+	void resetFlag(string flagName) {
+		if (!flags.reset(flagName)) {
+			cout << "Error: invalid flag " << flagName << endl;
+			exit(1);
+		}
+	}
+
+	/**
+	 * @brief Pushes a register value onto the system stack
+	 */
+	void pushRegister(string registerName) {
+		if (systemStack.isFull()) {
+			cout << "Error: stack overflow" << endl;
+			exit(1);
+		}
+		systemStack.push(getRegisterValue(registerName));
+		si.increment();
+	}
+
+	/**
+	 * @brief Pops the system stack into a register
+	 */
+	void popToRegister(string registerName) {
+		if (systemStack.isEmpty()) {
+			cout << "Error: stack underflow" << endl;
+			exit(1);
+		}
+		signed char value = systemStack.pop();
+		si.decrement();
+		setRegisterValue(registerName, (int)value);
+	}
+
+	/**
+	 * @brief Prints the final VM state in assignment format
+	 */
+	void dump() const {
+		cout << "#Begin#" << endl << "#Registers#";
+		for (int i = 0; i < 8; i++) {
+			cout << format4((int)registers[i].getValue()) << "#";
+		}
+		cout << endl << "#Flags#OF#" << flags.getOverflow()
+			<< "#UF#" << flags.getUnderflow() << "#CF#"
+			<< flags.getCarry() << "#ZF#" << flags.getZero() << "#" << endl;
+		cout << "#PC#" << format4((int)pc.getValue()) << "#" << endl;
+		cout << "#Memory#" << endl;
+		for (int i = 0; i < memory.getSize(); i++) {
+			cout << "#" << format4((int)memory.read(i));
+			if ((i + 1) % 8 == 0) cout << "#" << endl;
+		}
+		cout << "#End#" << endl;
+	}
+};
+
 // ------------------------- instruction classes -------------------------
 
 /**
