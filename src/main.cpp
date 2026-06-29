@@ -231,6 +231,13 @@ public:
 	int getSize() const {
 		return topIndex + 1;
 	}
+
+	/**
+	 * @brief Clears all elements from the stack
+	 */
+	void clear() {
+		topIndex = -1;
+	}
 };
 
 /**
@@ -353,10 +360,12 @@ public:
 	 * @param address The address to write to
 	 * @param val The value to write
 	 */
-	void write(int address, signed char val) {
+	bool write(int address, signed char val) {
 		if (address >= 0 && address < MEMORY_SIZE) {
 			cells[address] = val;
+			return true;
 		}
+		return false;
 	}
 
 	/**
@@ -378,6 +387,14 @@ public:
 		for (int i = 0; i < MEMORY_SIZE; i++) {
 			cells[i] = 0;
 		}
+	}
+
+	/**
+	 * @brief Returns the size of the memory
+	 * @return The number of memory cells
+	 */
+	int getSize() const {
+		return MEMORY_SIZE;
 	}
 };
 
