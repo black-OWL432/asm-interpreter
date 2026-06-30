@@ -1008,6 +1008,184 @@ public:
 };
 
 /**
+ * @class MOVInstruction
+ * @brief Handles MOV instruction for immediate, register, and memory-indirect modes
+ */
+class MOVInstruction : public Instruction {
+private:
+	string destRegister;
+	string sourceOperand;
+
+public:
+	/**
+	 * @brief Constructor for MOVInstruction
+	 * @param dest Destination register, such as R0
+	 * @param source Source operand, such as 10, R1, or [R1]
+	 */
+	MOVInstruction(string dest, string source) {
+		destRegister = dest;
+		sourceOperand = source;
+	}
+
+	/**
+	 * @brief Executes MOV instruction using CPU helper functions
+	 */
+	void execute(CPU& cpu) override {
+		if (!cpu.isRegisterName(destRegister)) {
+			cout << "Error: MOV destination must be a register" << endl;
+			exit(1);
+		}
+
+		int value = cpu.getOperandValue(sourceOperand);
+		cpu.setRegisterValue(destRegister, value);
+	}
+};
+
+/**
+ * @class ShiftInstruction
+ * @brief Skeleton for ROL, ROR, SHL, SHR instructions
+ */
+class ShiftInstruction : public Instruction {
+private:
+	string opcode;
+	string destRegister;
+	string countOperand;
+
+public:
+	ShiftInstruction(string op, string dest, string count) {
+		opcode = op;
+		destRegister = dest;
+		countOperand = count;
+	}
+
+	void execute(CPU& cpu) override {
+		cout << "Error: " << opcode << " instruction not implemented yet" << endl;
+		exit(1);
+	}
+};
+
+/**
+ * @class LoadInstruction
+ * @brief Skeleton for LOAD instruction
+ */
+class LoadInstruction : public Instruction {
+private:
+	string destRegister;
+	string addressOperand;
+
+public:
+	LoadInstruction(string dest, string address) {
+		destRegister = dest;
+		addressOperand = address;
+	}
+
+	void execute(CPU& cpu) override {
+		cout << "Error: LOAD instruction not implemented yet" << endl;
+		exit(1);
+	}
+};
+
+/**
+ * @class StoreInstruction
+ * @brief Handles STORE instruction for direct and register-indirect memory addressing
+ */
+class StoreInstruction : public Instruction {
+private:
+	string firstOperand;
+	string secondOperand;
+
+public:
+	StoreInstruction(string first, string second) {
+		firstOperand = first;
+		secondOperand = second;
+	}
+
+	void execute(CPU& cpu) override {
+		int address;
+		int value;
+
+		/*
+		 * Supports:
+		 * STORE R1, 43
+		 * STORE R1, [R2]
+		 */
+		if (cpu.isRegisterName(firstOperand)) {
+			value = (int)cpu.getRegisterValue(firstOperand);
+			address = cpu.getAddress(secondOperand);
+		}
+
+		/*
+		 * Supports:
+		 * STORE 20, R3
+		 * STORE [R2], R3
+		 */
+		else {
+			address = cpu.getAddress(firstOperand);
+			value = cpu.getOperandValue(secondOperand);
+		}
+
+		cpu.writeMemory(address, value);
+	}
+};
+
+/**
+ * @class ResetInstruction
+ * @brief Skeleton for RESET instruction
+ */
+class ResetInstruction : public Instruction {
+private:
+	string flagName;
+
+public:
+	ResetInstruction(string flag) {
+		flagName = flag;
+	}
+
+	void execute(CPU& cpu) override {
+		cout << "Error: RESET instruction not implemented yet" << endl;
+		exit(1);
+	}
+};
+
+/**
+ * @class PushInstruction
+ * @brief Skeleton for PUSH instruction
+ */
+class PushInstruction : public Instruction {
+private:
+	string registerName;
+
+public:
+	PushInstruction(string reg) {
+		registerName = reg;
+	}
+
+	void execute(CPU& cpu) override {
+		cout << "Error: PUSH instruction not implemented yet" << endl;
+		exit(1);
+	}
+};
+
+/**
+ * @class PopInstruction
+ * @brief Skeleton for POP instruction
+ */
+class PopInstruction : public Instruction {
+private:
+	string registerName;
+
+public:
+	PopInstruction(string reg) {
+		registerName = reg;
+	}
+
+	void execute(CPU& cpu) override {
+		cout << "Error: POP instruction not implemented yet" << endl;
+		exit(1);
+	}
+};
+
+/**
  * @class Operation
  * @brief Abstract base class for all operations
  */
@@ -1024,6 +1202,18 @@ public:
 		this->opcode = opcode;
 		this->arg1 = arg1;
 		this->arg2 = arg2;
+	}
+
+	string getOpcode() const {
+		return opcode;
+	}
+
+	string getArg1() const {
+		return arg1;
+	}
+
+	string getArg2() const {
+		return arg2;
 	}
 
 	virtual ~Operation() {}
@@ -1049,12 +1239,163 @@ std::string trim(const std::string& str) {
 	return str.substr(first, last - first + 1);
 }
 
+/**
+ * @class Runner
+ * @brief Loads an assembly program, converts operations into Instruction objects, and runs them on CPU
+ * @author KONG WAI XIN - Demo runner structure
+ */
+class Runner {
+private:
+	CPU cpu;
+	sVector<Operation> operations;
+	sVector<Instruction*> instructions;
+
+	/**
+	 * @brief Deletes dynamically created instruction objects
+	 */
+	void clearInstructions() {
+		for (int i = 0; i < instructions.getSize(); i++) {
+			delete instructions[i];
+		}
+		instructions.clear();
+	}
+
+	/**
+	 * @brief Creates the correct Instruction subclass based on opcode
+	 */
+	Instruction* createInstruction(Operation& op) {
+		string code = op.getOpcode();
+		string a1 = op.getArg1();
+		string a2 = op.getArg2();
+
+		if (code == "MOV") {
+			return new MOVInstruction(a1, a2);
+		} else if (code == "ADD" || code == "SUB" || code == "MUL" || code == "DIV") {
+			return new ArithmeticInstruction(code, a1, a2);
+		} else if (code == "INC" || code == "DEC") {
+			return new ArithmeticInstruction(code, a1);
+		} else if (code == "INPUT" || code == "DISPLAY") {
+			return new IOInstruction(code, a1);
+		} else if (code == "ROL" || code == "ROR" || code == "SHL" || code == "SHR") {
+			return new ShiftInstruction(code, a1, a2);
+		} else if (code == "LOAD") {
+			return new LoadInstruction(a1, a2);
+		} else if (code == "STORE") {
+			return new StoreInstruction(a1, a2);
+		} else if (code == "RESET") {
+			return new ResetInstruction(a1);
+		} else if (code == "PUSH") {
+			return new PushInstruction(a1);
+		} else if (code == "POP") {
+			return new PopInstruction(a1);
+		}
+
+		cout << "Error: unknown instruction " << code << endl;
+		exit(1);
+	}
+
+	/**
+	 * @brief Parses one non-empty assembly line into an Operation object
+	 */
+	void parseLine(string line) {
+		int commentIdx = line.find(';');
+		if (commentIdx != -1) {
+			line = line.substr(0, commentIdx);
+		}
+
+		line = trim(line);
+		if (line.empty()) {
+			return;
+		}
+
+		int space = line.find_first_of(" \t");
+		if (space == -1) {
+			operations.pushBack(Operation(line, "", ""));
+			return;
+		}
+
+		string opcode = trim(line.substr(0, space));
+		string args = trim(line.substr(space + 1));
+
+		int comma = args.find(',');
+		string arg1;
+		string arg2;
+
+		if (comma == -1) {
+			arg1 = trim(args);
+			arg2 = "";
+		} else {
+			arg1 = trim(args.substr(0, comma));
+			arg2 = trim(args.substr(comma + 1));
+		}
+
+		operations.pushBack(Operation(opcode, arg1, arg2));
+	}
+
+public:
+	/**
+	 * @brief Destructor clears all dynamically allocated instruction objects
+	 */
+	~Runner() {
+		clearInstructions();
+	}
+
+	/**
+	 * @brief Loads .asm file and stores parsed operations
+	 */
+	bool loadProgram(string fileName) {
+		ifstream fd(fileName);
+
+		if (!fd.is_open()) {
+			cout << "Error: Could not open file " << fileName << endl;
+			return false;
+		}
+
+		string line;
+		while (getline(fd, line)) {
+			parseLine(line);
+		}
+
+		fd.close();
+		return true;
+	}
+
+	/**
+	 * @brief Converts parsed operations into Instruction objects
+	 */
+	void buildInstructions() {
+		clearInstructions();
+
+		for (int i = 0; i < operations.getSize(); i++) {
+			Instruction* instruction = createInstruction(operations[i]);
+			instructions.pushBack(instruction);
+		}
+	}
+
+	/**
+	 * @brief Executes all instructions in order
+	 */
+	void run() {
+		for (int i = 0; i < instructions.getSize(); i++) {
+			instructions[i]->execute(cpu);
+			cpu.incrementPC();
+		}
+	}
+
+	/**
+	 * @brief Displays final CPU dump
+	 */
+	void dump() const {
+		cpu.dump();
+	}
+};
+
 // Entry point
 
 
+// Entry point
 int main(int argc, char* argv[]) {
 	string fileName;
-	sVector<Operation> program;
 
 	if (argc < 2) {
 		cout << "Enter filename: ";
@@ -1063,63 +1404,15 @@ int main(int argc, char* argv[]) {
 		fileName = argv[1];
 	}
 
-	ifstream fd(fileName);
-	if (!fd.is_open()) {
-		cout << "Error: Could not open file " << fileName << endl;
+	Runner runner;
+
+	if (!runner.loadProgram(fileName)) {
 		return 1;
 	}
 
-	string line;
-	while (getline(fd, line)) {
-		// Remove comment if exists
-		int commentIdx = line.find(';');
-		if (commentIdx != -1) {
-			// MOV R1, 5 ; this is a comment
-			// ^0........^commentIdx
-			line = line.substr(0, commentIdx);
-		}
-
-		line = trim(line);
-		if (line.empty()) continue;
-
-		// Find opcode/arg separator
-		int space = line.find_first_of(" \t");
-		if (space == -1) {
-			// condition for no arg found
-			program.pushBack(Operation(line, "", ""));
-			continue;
-		}
-
-		// condition MOV R1, 5
-		// opcode = "MOV"
-		// args = "R1, 5"
-		string opcode = trim(line.substr(0, space));
-		string args = trim(line.substr(space + 1));
-
-		int comma = args.find(',');
-		string arg1, arg2;
-		if (comma == -1) {
-			// condition PUSH R0
-			// arg1 = "R0"
-			arg1 = args;
-			arg2 = "" ;
-		} else {
-			// condition MOV R1, 5
-			// arg1 = "R1"
-			// arg2 = "5"
-			arg1 = trim(args.substr(0, comma));
-			arg2 = trim(args.substr(comma + 1));
-
-		}
-
-		program.pushBack(Operation(opcode, arg1, arg2));
-	}
-
-	fd.close();
-
-
-	// todo
-	
-
+	runner.buildInstructions();
+	runner.run();
+	runner.dump();
 	return 0;
+
 }
