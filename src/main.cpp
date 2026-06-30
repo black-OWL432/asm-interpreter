@@ -838,6 +838,13 @@ public:
 	}
 
 	/**
+	 * @brief Gets current program counter value
+	 */
+	int getPC() const {
+		return (int)pc.getValue();
+	}
+
+	/**
 	 * @brief Increments the program counter
 	 */
 	void incrementPC() {
@@ -880,24 +887,43 @@ public:
 	}
 
 	/**
-	 * @brief Prints the final VM state in assignment format
+	 * @brief Prints the final VM state in assignment format to any output stream
+	 */
+	void dump(ostream& out) const {
+		out << "#Begin#" << endl;
+		out << "#Registers#";
+
+		for (int i = 0; i < 8; i++) {
+			out << format4((int)registers[i].getValue()) << "#";
+		}
+
+		out << endl;
+		out << "#Flags#OF#" << flags.getOverflow()
+			<< "#UF#" << flags.getUnderflow()
+			<< "#CF#" << flags.getCarry()
+			<< "#ZF#" << flags.getZero() << "#" << endl;
+
+		out << "#PC#" << format4((int)pc.getValue()) << "#" << endl;
+		out << "#Memory#" << endl;
+
+		for (int i = 0; i < memory.getSize(); i++) {
+			out << "#" << format4((int)memory.read(i));
+
+			if ((i + 1) % 8 == 0) {
+				out << "#" << endl;
+			}
+		}
+
+		out << "#End#" << endl;
+	}
+
+	/**
+	 * @brief Prints the final VM state to screen
 	 */
 	void dump() const {
-		cout << "#Begin#" << endl << "#Registers#";
-		for (int i = 0; i < 8; i++) {
-			cout << format4((int)registers[i].getValue()) << "#";
-		}
-		cout << endl << "#Flags#OF#" << flags.getOverflow()
-			<< "#UF#" << flags.getUnderflow() << "#CF#"
-			<< flags.getCarry() << "#ZF#" << flags.getZero() << "#" << endl;
-		cout << "#PC#" << format4((int)pc.getValue()) << "#" << endl;
-		cout << "#Memory#" << endl;
-		for (int i = 0; i < memory.getSize(); i++) {
-			cout << "#" << format4((int)memory.read(i));
-			if ((i + 1) % 8 == 0) cout << "#" << endl;
-		}
-		cout << "#End#" << endl;
+		dump(cout);
 	}
+
 };
 
 // ------------------------- instruction classes -------------------------
@@ -1388,11 +1414,14 @@ public:
 	}
 
 	/**
-	 * @brief Executes all instructions in order
+	 * @brief Executes all instructions using the CPU program counter
 	 */
 	void run() {
-		for (int i = 0; i < instructions.getSize(); i++) {
-			instructions[i]->execute(cpu);
+		while (cpu.getPC() < instructions.getSize()) {
+			int currentPC = cpu.getPC();
+
+			instructions[currentPC]->execute(cpu);
+
 			cpu.incrementPC();
 		}
 	}
@@ -1403,6 +1432,24 @@ public:
 	void dump() const {
 		cpu.dump();
 	}
+
+	/**
+	 * @brief Writes final CPU dump to output file
+	 */
+	bool writeOutputFile(string outputFileName) const {
+		ofstream out(outputFileName.c_str());
+
+		if (!out.is_open()) {
+			cout << "Error: Could not create output file " << outputFileName << endl;
+			return false;
+		}
+
+		cpu.dump(out);
+		out.close();
+
+		return true;
+	}
+
 };
 
 // Entry point
@@ -1425,9 +1472,16 @@ int main(int argc, char* argv[]) {
 		return 1;
 	}
 
+	string outputFileName = "output.txt";
+
+	if (argc >= 3) {
+		outputFileName = argv[2];
+	}
+
 	runner.buildInstructions();
 	runner.run();
 	runner.dump();
-	return 0;
+	runner.writeOutputFile(outputFileName);
 
+	return 0;
 }
