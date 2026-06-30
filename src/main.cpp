@@ -1160,7 +1160,7 @@ public:
 
 /**
  * @class ShiftInstruction
- * @brief Skeleton for ROL, ROR, SHL, SHR instructions
+ * @brief Handles bitwise shifts and rotations: SHL, SHR, ROL, ROR
  */
 class ShiftInstruction : public Instruction {
 private:
@@ -1176,9 +1176,42 @@ public:
 	}
 
 	void execute(CPU& cpu) override {
-		cout << "Error: " << opcode << " instruction not implemented yet" << endl;
-		exit(1);
-	}
+		if (!cpu.isRegisterName(destRegister)) {
+			cout << "Error: shift destination must be a register" << endl;
+			exit(1);
+		}
+
+		int count = cpu.getOperandValue(countOperand);
+
+		if (count < 0) {
+			cout << "Error: shift count cannot be negative" << endl;
+			exit(1);
+		}
+
+		unsigned char value = (unsigned char)cpu.getRegisterValue(destRegister);
+		unsigned char result = value;
+
+		if (opcode == "SHL") {
+			if (count >= 8) result = 0;
+			else result = (unsigned char)(value << count);
+		} 
+		else if (opcode == "SHR") {
+			if (count >= 8) result = 0;
+			else result = (unsigned char)(value >> count);
+		} 
+		else if (opcode == "ROL") {
+			count = count % 8;
+			if (count == 0) result = value;
+			else result = (unsigned char)((value << count) | (value >> (8 - count)));
+		} 
+		else if (opcode == "ROR") {
+			count = count % 8;
+			if (count == 0) result = value;
+			else result = (unsigned char)((value >> count) | (value << (8 - count)));
+		}
+
+		cpu.setRegisterValue(destRegister, (int)result);
+		}
 };
 
 /**
@@ -1254,7 +1287,7 @@ public:
 
 /**
  * @class ResetInstruction
- * @brief Skeleton for RESET instruction
+ * @brief Handles RESET instruction for clearing one flag
  */
 class ResetInstruction : public Instruction {
 private:
@@ -1266,8 +1299,12 @@ public:
 	}
 
 	void execute(CPU& cpu) override {
-		cout << "Error: RESET instruction not implemented yet" << endl;
-		exit(1);
+		if (flagName == "") {
+			cout << "Error: RESET requires a flag name" << endl;
+			exit(1);
+		}
+
+		cpu.resetFlag(flagName);
 	}
 };
 
