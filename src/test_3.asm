@@ -1,0 +1,16 @@
+; Test LOAD direct, LOAD indirect, PUSH, POP
+
+MOV R0, 99
+STORE R0, 10
+
+LOAD R1, [10]
+
+MOV R2, 10
+LOAD R3, [R2]
+
+PUSH R1
+MOV R1, 0
+POP R4
+
+DISPLAY R3
+DISPLAY R4

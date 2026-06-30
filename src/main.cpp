@@ -1066,7 +1066,7 @@ public:
 
 /**
  * @class LoadInstruction
- * @brief Skeleton for LOAD instruction
+ * @brief Handles LOAD instruction for direct and register-indirect memory addressing
  */
 class LoadInstruction : public Instruction {
 private:
@@ -1080,8 +1080,15 @@ public:
 	}
 
 	void execute(CPU& cpu) override {
-		cout << "Error: LOAD instruction not implemented yet" << endl;
-		exit(1);
+		if (!cpu.isRegisterName(destRegister)) {
+			cout << "Error: LOAD destination must be a register" << endl;
+			exit(1);
+		}
+
+		int address = cpu.getAddress(addressOperand);
+		int value = (int)cpu.readMemory(address);
+
+		cpu.setRegisterValue(destRegister, value);
 	}
 };
 
@@ -1149,7 +1156,7 @@ public:
 
 /**
  * @class PushInstruction
- * @brief Skeleton for PUSH instruction
+ * @brief Handles PUSH instruction by pushing a register value onto the system stack
  */
 class PushInstruction : public Instruction {
 private:
@@ -1161,14 +1168,18 @@ public:
 	}
 
 	void execute(CPU& cpu) override {
-		cout << "Error: PUSH instruction not implemented yet" << endl;
-		exit(1);
+		if (!cpu.isRegisterName(registerName)) {
+			cout << "Error: PUSH source must be a register" << endl;
+			exit(1);
+		}
+
+		cpu.pushRegister(registerName);
 	}
 };
 
 /**
  * @class PopInstruction
- * @brief Skeleton for POP instruction
+ * @brief Handles POP instruction by popping the system stack into a register
  */
 class PopInstruction : public Instruction {
 private:
@@ -1180,8 +1191,12 @@ public:
 	}
 
 	void execute(CPU& cpu) override {
-		cout << "Error: POP instruction not implemented yet" << endl;
-		exit(1);
+		if (!cpu.isRegisterName(registerName)) {
+			cout << "Error: POP destination must be a register" << endl;
+			exit(1);
+		}
+
+		cpu.popToRegister(registerName);
 	}
 };
 
