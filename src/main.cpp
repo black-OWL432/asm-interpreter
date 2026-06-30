@@ -1033,6 +1033,97 @@ public:
 	}
 };
 
+
+
+
+
+/**
+ * @class MOVInstruction
+ * @brief Handles MOV operations (Immediate, Register, Indirect)
+ */
+class MOVInstruction : public Instruction {
+private:
+    string dest;
+    string source;
+
+public:
+    MOVInstruction(string d, string s) {
+        dest = d;
+        source = s;
+    }
+
+    void execute(CPU& cpu) override {
+        int val = 0;
+        
+        // Check if the source is a memory address (Indirect: [R1])
+        if (source.front() == '[' && source.back() == ']') {
+            // Extract the register name from inside the brackets (e.g., R1 from [R1])
+            string regName = source.substr(1, source.length() - 2);
+            int address = cpu.getRegisterValue(regName);
+            
+            // Read the value from memory
+            val = cpu.readMemory(address); 
+        } 
+        else {
+            // Handle either an immediate value (e.g., 10) or a register operand (e.g., R1)
+            val = cpu.getOperandValue(source);
+        }
+
+        // Store the final value in the destination register
+        cpu.setRegisterValue(dest, val);
+    }
+};
+
+/**
+ * @class ShiftInstruction
+ * @brief Handles bitwise shifts and rotations (SHL, SHR, ROL, ROR)
+ */
+class ShiftInstruction : public Instruction {
+private:
+    string opcode;
+    string destRegister;
+    string countStr;
+
+public:
+    ShiftInstruction(string op, string dest, string count) {
+        opcode = op;
+        destRegister = dest;
+        countStr = count;
+    }
+
+    void execute(CPU& cpu) override {
+        // Retrieve the shift count
+        int count = cpu.getOperandValue(countStr);
+
+        // Retrieve the current register value
+        int currentVal = cpu.getRegisterValue(destRegister);
+
+        // Convert to an unsigned 8-bit value to perform bitwise operations correctly
+        unsigned char uVal = (unsigned char)currentVal;
+
+        // Execute the shift or rotation operation
+        if (opcode == "SHL") {
+            uVal = uVal << count; // Shift left (zero-fill)
+        } 
+        else if (opcode == "SHR") {
+            uVal = uVal >> count; // Shift right (zero-fill)
+        } 
+        else if (opcode == "ROL") {
+            count = count % 8; // Prevent shifts larger than 8 bits
+            uVal = (uVal << count) | (uVal >> (8 - count)); // Rotate left
+        } 
+        else if (opcode == "ROR") {
+            count = count % 8; // Prevent shifts larger than 8 bits
+            uVal = (uVal >> count) | (uVal << (8 - count)); // Rotate right
+        }
+
+        // Store the result back into the register as a signed 8-bit value
+        cpu.setRegisterValue(destRegister, (signed char)uVal);
+    }
+};
+
+
+
 /**
  * @class MOVInstruction
  * @brief Handles MOV instruction for immediate, register, and memory-indirect modes
@@ -1485,3 +1576,4 @@ int main(int argc, char* argv[]) {
 
 	return 0;
 }
+
