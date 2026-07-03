@@ -421,7 +421,7 @@ public:
 	Register(signed char val = 0) : value(val) {}
 
 	/**
-	 * @brief Destructor
+	 * @brief Destructor. Polymorphism.
 	 */
 	virtual ~Register() {}
 
@@ -438,14 +438,14 @@ public:
 	void setValue(signed char val) { value = val; }
 
 	/**
-	 * @brief Resets the register to zero
+	 * @brief Resets the register to zero. Polymorphism.
 	 */
 	virtual void reset() { value = 0; }
 };
 
 /**
  * @class GeneralRegister
- * @brief Represents one of the 8 VM data registers R0-R7.
+ * @brief Represents one of the 8 VM data registers R0-R7. Inherit Register.
  * @author KONG WAI XIN
  */
 class GeneralRegister : public Register {
@@ -480,7 +480,7 @@ public:
 
 /**
  * @class FlagRegister
- * @brief Implements the flag register of the assembler
+ * @brief Implements the flag register of the assembler. Inherit Register.
  * @author LEE CHONG CHUN
  */
 class FlagRegister : public Register {
@@ -502,7 +502,7 @@ public:
 	}
 
 	/**
-	 * @brief Destructor
+	 * @brief Destructor. Polymorphism.
 	 */
 	virtual ~FlagRegister() {}
 
@@ -555,7 +555,7 @@ public:
 	bool getCarry() const { return Carry; }
 
 	/**
-	 * @brief Resets the flags to false
+	 * @brief Resets the flags to false. Polymorphism.
 	 */
 	void reset() {
 		Overflow = false;
@@ -611,7 +611,7 @@ public:
 
 /**
  * @class ProgramCounter
- * @brief Implements the program counter of the assembler
+ * @brief Implements the program counter of the assembler. Inherit Register.
  * @author LEE CHONG CHUN
  */
 class ProgramCounter : public Register {
@@ -635,7 +635,7 @@ public:
 
 /**
  * @class StackPointer
- * @brief Implements the stack pointer of the assembler
+ * @brief Implements the stack pointer of the assembler. Inherit Register.
  * @author LEE CHONG CHUN
  */
 class StackPointer : public Register {
@@ -943,20 +943,20 @@ public:
 class Instruction {
 public:
 	/**
-	 * @brief Virtual function to be overridden by derived classes
+	 * @brief Virtual function to be overridden by derived classes. Polymorphism.
 	 * @param cpu Reference to the CPU to execute the instruction on
 	 */
 	virtual void execute(CPU& cpu) = 0;
 
 	/**
-	 * @brief Virtual destructor
+	 * @brief Virtual destructor. Polymorphism.
 	 */
 	virtual ~Instruction() {}
 };
 
 /**
  * @class ArithmeticInstruction
- * @brief arithmetic operations for ADD, SUB, MUL, DIV, INC, DEC instructions
+ * @brief arithmetic operations for ADD, SUB, MUL, DIV, INC, DEC instructions. Inherit Instruction.
  */
 class ArithmeticInstruction : public Instruction {
 private:
@@ -971,6 +971,9 @@ public:
 		sourceRegister = source;
 	}
 
+	/**
+	 * @brief Executes the arithmetic instruction. Polymorphism.
+	 */
 	void execute(CPU& cpu) override {
 		// 1. Retrieve the actual value from the target stack via the CPU
 		int destValue = (int)cpu.getRegisterValue(destRegister);
@@ -1010,7 +1013,7 @@ public:
 
 /**
  * @class IOInstruction
- * @brief I/O instructions for INPUT, DISPLAY instructions
+ * @brief I/O instructions for INPUT, DISPLAY instructions. Inherit Instruction.
  */
 class IOInstruction : public Instruction {
 private:
@@ -1023,6 +1026,9 @@ public:
 		targetRegister = target;
 	}
 
+	/**
+	 * @brief Executes the I/O instruction. Polymorphism.
+	 */
 	void execute(CPU& cpu) override {
 		if (opcode == "INPUT") {
 			cout << "?";
@@ -1043,7 +1049,7 @@ public:
 
 /**
  * @class MOVInstruction
- * @brief Handles MOV instruction for immediate, register, and memory-indirect modes
+ * @brief Handles MOV instruction for immediate, register, and memory-indirect modes. Inherit Instruction.
  */
 class MOVInstruction : public Instruction {
 private:
@@ -1062,7 +1068,7 @@ public:
 	}
 
 	/**
-	 * @brief Executes MOV instruction using CPU helper functions
+	 * @brief Executes MOV instruction using CPU helper functions. Polymorphism.
 	 */
 	void execute(CPU& cpu) override {
 		if (!cpu.isRegisterName(destRegister)) {
@@ -1077,7 +1083,7 @@ public:
 
 /**
  * @class ShiftInstruction
- * @brief Handles bitwise shifts and rotations: SHL, SHR, ROL, ROR
+ * @brief Handles bitwise shifts and rotations: SHL, SHR, ROL, ROR. Inherit Instruction.
  */
 class ShiftInstruction : public Instruction {
 private:
@@ -1092,6 +1098,9 @@ public:
 		countOperand = count;
 	}
 
+	/**
+	 * @brief Executes the shift instruction. Polymorphism.
+	 */
 	void execute(CPU& cpu) override {
 		if (!cpu.isRegisterName(destRegister)) {
 			cout << "Error: shift destination must be a register" << endl;
@@ -1133,7 +1142,7 @@ public:
 
 /**
  * @class LoadInstruction
- * @brief Handles LOAD instruction for direct and register-indirect memory addressing
+ * @brief Handles LOAD instruction for direct and register-indirect memory addressing. Inherit Instruction.
  */
 class LoadInstruction : public Instruction {
 private:
@@ -1146,6 +1155,9 @@ public:
 		addressOperand = address;
 	}
 
+	/**
+	 * @brief Executes the load instruction. Polymorphism.
+	 */
 	void execute(CPU& cpu) override {
 		if (!cpu.isRegisterName(destRegister)) {
 			cout << "Error: LOAD destination must be a register" << endl;
@@ -1161,7 +1173,7 @@ public:
 
 /**
  * @class StoreInstruction
- * @brief Handles STORE instruction for direct and register-indirect memory addressing
+ * @brief Handles STORE instruction for direct and register-indirect memory addressing. Inherit Instruction.
  */
 class StoreInstruction : public Instruction {
 private:
@@ -1174,6 +1186,9 @@ public:
 		secondOperand = second;
 	}
 
+	/**
+	 * @brief Executes the store instruction. Polymorphism.
+	 */
 	void execute(CPU& cpu) override {
 		int address;
 		int value;
@@ -1204,7 +1219,7 @@ public:
 
 /**
  * @class ResetInstruction
- * @brief Handles RESET instruction for clearing one flag
+ * @brief Handles RESET instruction for clearing one flag. Inherit Instruction.
  */
 class ResetInstruction : public Instruction {
 private:
@@ -1215,6 +1230,9 @@ public:
 		flagName = flag;
 	}
 
+	/**
+	 * @brief Executes the reset instruction. Polymorphism.
+	 */
 	void execute(CPU& cpu) override {
 		if (flagName == "") {
 			cout << "Error: RESET requires a flag name" << endl;
@@ -1227,7 +1245,7 @@ public:
 
 /**
  * @class PushInstruction
- * @brief Handles PUSH instruction by pushing a register value onto the system stack
+ * @brief Handles PUSH instruction by pushing a register value onto the system stack. Inherit Instruction.
  */
 class PushInstruction : public Instruction {
 private:
@@ -1238,6 +1256,9 @@ public:
 		registerName = reg;
 	}
 
+	/**
+	 * @brief Executes the push instruction. Polymorphism.
+	 */
 	void execute(CPU& cpu) override {
 		if (!cpu.isRegisterName(registerName)) {
 			cout << "Error: PUSH source must be a register" << endl;
@@ -1250,7 +1271,7 @@ public:
 
 /**
  * @class PopInstruction
- * @brief Handles POP instruction by popping the system stack into a register
+ * @brief Handles POP instruction by popping the system stack into a register. Inherit Instruction.
  */
 class PopInstruction : public Instruction {
 private:
@@ -1261,6 +1282,9 @@ public:
 		registerName = reg;
 	}
 
+	/**
+	 * @brief Executes the pop instruction. Polymorphism.
+	 */
 	void execute(CPU& cpu) override {
 		if (!cpu.isRegisterName(registerName)) {
 			cout << "Error: POP destination must be a register" << endl;
@@ -1302,6 +1326,9 @@ public:
 		return arg2;
 	}
 
+	/**
+	 * @brief Virtual destructor. Polymorphism.
+	 */
 	virtual ~Operation() {}
 };
 
