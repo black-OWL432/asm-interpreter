@@ -939,6 +939,7 @@ public:
 /**
  * @class Instruction
  * @brief Abstract Base Class for all instructions
+ * @author MAKHLOUF MAYAS 
  */
 class Instruction {
 public:
@@ -957,6 +958,7 @@ public:
 /**
  * @class ArithmeticInstruction
  * @brief arithmetic operations for ADD, SUB, MUL, DIV, INC, DEC instructions. Inherit Instruction.
+ * @author MAKHLOUF MAYAS 
  */
 class ArithmeticInstruction : public Instruction {
 private:
@@ -1014,6 +1016,7 @@ public:
 /**
  * @class IOInstruction
  * @brief I/O instructions for INPUT, DISPLAY instructions. Inherit Instruction.
+ * @author MAKHLOUF MAYAS 
  */
 class IOInstruction : public Instruction {
 private:
@@ -1050,6 +1053,7 @@ public:
 /**
  * @class MOVInstruction
  * @brief Handles MOV instruction for immediate, register, and memory-indirect modes. Inherit Instruction.
+ * @author MAKHLOUF MAYAS 
  */
 class MOVInstruction : public Instruction {
 private:
@@ -1084,6 +1088,7 @@ public:
 /**
  * @class ShiftInstruction
  * @brief Handles bitwise shifts and rotations: SHL, SHR, ROL, ROR. Inherit Instruction.
+ * @author MAKHLOUF MAYAS 
  */
 class ShiftInstruction : public Instruction {
 private:
