@@ -6,7 +6,7 @@ T11L Assignment Group I
 LEE CHONG CHUN				252UC254YW		LEE.CHONG.CHUN1@student.mmu.edu.my
 KONG WAI XIN				242UC244LP		KONG.WAI.XIN@student.mmu.edu.my
 MAKHLOUF MAYAS				252UC251RE		MAKHLOUF.MAYAS@student.mmu.edu.my
-MOHAMMED A. T. SHAKSHAK		253UC2555D      MOHAMMED.A.T@student.mmu.edu.my
+MOHAMMED A. T. SHAKSHAK		253UC2555D		MOHAMMED.A.T@student.mmu.edu.my
 */
 
 #include <iostream>
@@ -24,6 +24,7 @@ template <typename T> class sQueue;
 /**
  * @class sVector
  * @brief Self implementation of STL Vector compatible class
+ * @author LEE CHONG CHUN
 */
 template <typename T>
 class sVector {
@@ -149,6 +150,7 @@ public:
 /**
  * @class sStack
  * @brief Self implementation of STL Stack compatible class
+ * @author LEE CHONG CHUN
  */
 template <typename T>
 class sStack {
@@ -243,6 +245,7 @@ public:
 /**
  * @class sQueue
  * @brief Self implementation of STL Queue compatible class
+ * @author LEE CHONG CHUN
  */
 template <typename T>
 class sQueue {
@@ -339,6 +342,7 @@ public:
 /**
  * @class Memory
  * @brief Implements the memory of the assembler
+ * @author LEE CHONG CHUN
  */
 class Memory {
 private:
@@ -403,6 +407,7 @@ public:
 /**
  * @class Register
  * @brief Abstract base class for all registers
+ * @author LEE CHONG CHUN
  */
 class Register {
 protected:
@@ -476,6 +481,7 @@ public:
 /**
  * @class FlagRegister
  * @brief Implements the flag register of the assembler
+ * @author LEE CHONG CHUN
  */
 class FlagRegister : public Register {
 private:
@@ -606,6 +612,7 @@ public:
 /**
  * @class ProgramCounter
  * @brief Implements the program counter of the assembler
+ * @author LEE CHONG CHUN
  */
 class ProgramCounter : public Register {
 public:
@@ -629,6 +636,7 @@ public:
 /**
  * @class StackPointer
  * @brief Implements the stack pointer of the assembler
+ * @author LEE CHONG CHUN
  */
 class StackPointer : public Register {
 public:
@@ -1033,16 +1041,6 @@ public:
 	}
 };
 
-
-
-
-
-
-
-
-
-
-
 /**
  * @class MOVInstruction
  * @brief Handles MOV instruction for immediate, register, and memory-indirect modes
@@ -1311,6 +1309,7 @@ public:
  * @brief Trims whitespace from a string
  * @param str The string to trim
  * @return The trimmed string
+ * @author LEE CHONG CHUN
  */
 std::string trim(const std::string& str) {
 	//           MOV
@@ -1500,9 +1499,6 @@ public:
 };
 
 // Entry point
-
-
-// Entry point
 int main(int argc, char* argv[]) {
 	string fileName;
 
@@ -1532,4 +1528,3 @@ int main(int argc, char* argv[]) {
 
 	return 0;
 }
-
