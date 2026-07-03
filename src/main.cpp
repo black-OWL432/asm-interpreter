@@ -1412,8 +1412,11 @@ private:
 	 * @brief Parses one non-empty assembly line into an Operation object
 	 */
 	void parseLine(string line) {
+		// Remove comment if exists
 		int commentIdx = line.find(';');
 		if (commentIdx != -1) {
+			// MOV R1, 5 ; this is a comment
+			// ^0........^commentIdx
 			line = line.substr(0, commentIdx);
 		}
 
@@ -1424,21 +1427,29 @@ private:
 
 		int space = line.find_first_of(" \t");
 		if (space == -1) {
+			// condition for no arg found
 			operations.pushBack(Operation(line, "", ""));
 			return;
 		}
 
+		// condition MOV R1, 5
+		// opcode = "MOV"
+		// args = "R1, 5"
 		string opcode = trim(line.substr(0, space));
 		string args = trim(line.substr(space + 1));
 
 		int comma = args.find(',');
-		string arg1;
-		string arg2;
+		string arg1, arg2;
 
 		if (comma == -1) {
+			// condition PUSH R0
+			// arg1 = "R0"
 			arg1 = trim(args);
 			arg2 = "";
 		} else {
+			// condition MOV R1, 5
+			// arg1 = "R1"
+			// arg2 = "5"
 			arg1 = trim(args.substr(0, comma));
 			arg2 = trim(args.substr(comma + 1));
 		}
